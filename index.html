@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="buscaminas.css">
+</head>
+<body>
+
+    <div class="program-wrapper">
+
+        <div class="game-container">
+            
+            <div class="banner difficulty-selection-banner d-none">
+                <h5>Seleccionar nivel de dificultad:</h5>
+                <div class="difficulty-buttons-container">
+                    <button class="diff-btn diff-1" minutes="02" boxes-number="5">1</button>
+                    <button class="diff-btn diff-2" minutes="05" boxes-number="10">2</button>
+                    <button class="diff-btn diff-3" minutes="08" boxes-number="15">3</button>
+                    <button class="diff-btn diff-4" minutes="12" boxes-number="20">4</button>
+                </div>
+            </div>
+
+            <div class="banner warning-banner d-none">
+                <h5>¡Ha perdido la partida!</h5>
+                <button class="reload-btn">Volver a jugar</button>
+            </div>
+
+            
+            <div class="banner win-alert-banner d-none">
+                <h5>¡Ha ganado la partida!</h5>
+                <button class="reload-btn">Volver a jugar</button>
+            </div>
+
+        </div>
+
+        <aside class="side-bar">
+            <div class="clock">
+                <div class="time mins">00</div>
+                <div class="time segs">00</div>
+            </div>
+
+            <div id="flag">
+                <img src="RedFlag.png" id="red-flag">
+            </div>
+
+            <div class="game-btns-container">
+                <button class="btn start-game-btn">Start</button>
+                <button class="btn pause-game-btn d-none">Pause</button>
+            </div>
+
+        </aside>
+
+        <div class="overlay"></div>
+    </div>
+
+    <script type="module"  src="./game.js"></script>
+    <script type="module" src="./layers.js"></script>
+    <script type="module" src="./clock.js"></script>
+</body>
+</html>
