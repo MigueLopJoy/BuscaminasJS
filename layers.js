@@ -6,7 +6,7 @@ const d = document,
     pauseBtn = d.querySelector(".pause-game-btn")
 
 const selectDifficulty = diffBtn => {
-    d.querySelector(".clock .mins").textContent = diffBtn.getAttribute("minutes")
+    d.querySelector(".time.mins").textContent = diffBtn.getAttribute("minutes")
     createBoxes(diffBtn.getAttribute("boxes-number"))
 }
 
@@ -85,18 +85,24 @@ const toggleBannerRenderization = banner => {
     }
 }
 
-const activeStartAndPauseBtnsToggler = () => {
+const activateStartAndPauseBtnsToggler = () => {
+    const toggleBtns = () => {
+        startBtn.classList.toggle("d-none")
+        pauseBtn.classList.toggle("d-none")
+    }
     d.addEventListener("click", e => {
         if (e.target === startBtn || e.target === pauseBtn) {
-            startBtn.classList.toggle("d-none")
-            pauseBtn.classList.toggle("d-none")
+            toggleBtns()
         }
+    })
+    d.addEventListener("keyup", e => {
+        if (e.key === "Enter") toggleBtns()
     })
 }
 
 export {
     toggleBannerRenderization,
     selectDifficulty,
-    activeStartAndPauseBtnsToggler,
+    activateStartAndPauseBtnsToggler,
     prepareGameBoard
 }

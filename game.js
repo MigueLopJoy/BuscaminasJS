@@ -3,19 +3,23 @@ import {
     selectDifficulty
 } from "./layers.js"
 
-import { toggleTimer } from "./clock.js"
+import {
+    toggleTimer,
+    enableTimerToggling
+} from "./clock.js"
 
 import {
-    activeStartAndPauseBtnsToggler,
+    activateStartAndPauseBtnsToggler,
     prepareGameBoard
 } from "./layers.js"
 
 const d = document,
-    gameContainer = d.querySelector("game-container"),
+    gameContainer = d.querySelector(".game-container"),
     diffSelectionBanner = d.querySelector(".difficulty-selection-banner"),
+    warningBanner = d.querySelector(".warning-banner"),
+    winningBanner = d.querySelector(".win-alert-banner"),
     diffBtns = d.querySelectorAll(".diff-btn"),
     startBtn = d.querySelector(".start-game-btn"),
-    pauseBtn = d.querySelector(".pause-game-btn"),
     overlay = d.querySelector(".overlay")
 
 d.addEventListener("DOMContentLoaded", () => {
@@ -23,26 +27,37 @@ d.addEventListener("DOMContentLoaded", () => {
     activateDifficultySelectionBtns()
 })
 
+const handleKeyUpGameStart = e => {
+    if (e.key === "Enter") {
+        prepareGameStart()
+    }
+}
+
 const activateDifficultySelectionBtns = () => {
     for (let i = 0; i < diffBtns.length; i++) {
         diffBtns[i].addEventListener("click", e => {
             selectDifficulty(e.target)
             toggleBannerRenderization(diffSelectionBanner)
+            activateStartAndPauseBtnsToggler()
             startBtn.addEventListener("click", prepareGameStart)
+            d.addEventListener("keyup", handleKeyUpGameStart)
         })
     }
 }
 
 const prepareGameStart = () => {
     startBtn.removeEventListener("click", prepareGameStart)
-    startBtn.addEventListener("click", toggleTimer)
-    pauseBtn.addEventListener("click", toggleTimer)
-    activeStartAndPauseBtnsToggler()
+    d.removeEventListener("keyup", handleKeyUpGameStart)
+    toggleTimer()
+    enableTimerToggling()
     prepareGameBoard()
     dragAndDrop()
+    enableGameReload()
 }
 
 const handleBoxClick = target => {
+    let boxes = d.querySelectorAll(".box"),
+        boxesNumber = boxes.length
 
     if (!(target.hasChildNodes())) {
 
@@ -55,36 +70,33 @@ const handleBoxClick = target => {
             target.style.backgroundPosition = "center"
             target.style.boxShadow = "none"
 
-            createWarning()
-
-            const warning = d.getElementById("warning")
-
+            toggleBannerRenderization(warningBanner)
             gameContainer.style.backgroundColor = "red"
             gameContainer.style.animation = "flash 0.2s forwards"
-            warning.style.animation = "warning-appear 3s forwards 0.5s"
-            overlay.style.animation = "overlay-appear 4s forwards 1s"
+            warningBanner.style.animation = "warning-appear 3s forwards 0.5s"
+            overlay.style.animation = "capa-appear 4s forwards 1s"
+            toggleTimer()
 
         } else {
 
             let contador = 0
-            let y = Math.sqrt(gameContainer.children.length)
-            let x
-            let targetBoxNumber = target.getAttribute("class")
+            let y = Math.sqrt(boxesNumber)
+            let targetBoxNumber
+            let targetBoxClasses = target.getAttribute("class")
 
-            if (targetBoxNumber.slice(8).length > 3) {
-                if (targetBoxNumber.slice(8).length === 9) {
-                    x = Number(targetBoxNumber.slice(8, 9))
-                } else if (targetBoxNumber.slice(8).length === 10) {
-                    x = Number(targetBoxNumber.slice(8, 10))
-                } else if (targetBoxNumber.slice(8).length === 11) {
-                    x = Number(targetBoxNumber.slice(8, 11))
+            if (targetBoxClasses.slice(8).length > 3) {
+                if (targetBoxClasses.slice(8).length === 9) {
+                    targetBoxNumber = Number(targetBoxClasses.slice(8, 9))
+                } else if (targetBoxClasses.slice(8).length === 10) {
+                    targetBoxNumber = Number(targetBoxClasses.slice(8, 10))
+                } else if (targetBoxClasses.slice(8).length === 11) {
+                    targetBoxNumber = Number(targetBoxClasses.slice(8, 11))
                 }
-            } else x = Number(targetBoxNumber.slice(8))
+            } else targetBoxNumber = Number(targetBoxClasses.slice(8))
 
-            for (let i = 0; i < gameContainer.children.length; i++) {
-
-                let z
-                let children = gameContainer.children[i]
+            for (let i = 0; i < boxesNumber; i++) {
+                let boxNumber
+                let children = boxes[i]
                 let childrenBoxNumber = children.getAttribute("class")
 
                 if (childrenBoxNumber.slice(8).length > 3) {
@@ -92,151 +104,151 @@ const handleBoxClick = target => {
                         (!(children.classList.contains("flagged"))) &&
                         (!(children.classList.contains("box-bomb")))) {
                         if (childrenBoxNumber.slice(8).length === 9) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 10) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 11) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if ((children.classList.contains("column2")) &&
                         (!(children.classList.contains("flagged"))) &&
                         (!(children.classList.contains("box-bomb")))) {
                         if (childrenBoxNumber.slice(8).length === 9) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 10) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 11) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if ((children.classList.contains("flagged")) &&
                         (!(children.classList.contains("column1"))) &&
                         (!(children.classList.contains("column2"))) &&
                         (!(children.classList.contains("box-bomb")))) {
                         if (childrenBoxNumber.slice(8).length === 9) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 10) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 11) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if ((children.classList.contains("box-bomb")) &&
                         (!(children.classList.contains("column1"))) &&
                         (!(children.classList.contains("column2"))) &&
                         (!(children.classList.contains("flagged")))) {
                         if (childrenBoxNumber.slice(8).length === 10) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 11) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 12) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column1")) &&
                         (children.classList.contains("flagged"))) &&
                         (!(children.classList.contains("column2"))) &&
                         (!(children.classList.contains("box-bomb")))) {
                         if (childrenBoxNumber.slice(8).length === 17) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 18) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 19) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column2")) &&
                         (children.classList.contains("flagged"))) &&
                         (!(children.classList.contains("column1"))) &&
                         (!(children.classList.contains("box-bomb")))) {
                         if (childrenBoxNumber.slice(8).length === 17) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 18) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 19) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column1")) &&
                         (children.classList.contains("box-bomb"))) &&
                         (!(children.classList.contains("column2"))) &&
                         (!(children.classList.contains("flagged")))) {
                         if (childrenBoxNumber.slice(8).length === 18) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 19) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 20) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column2")) &&
                         (children.classList.contains("box-bomb"))) &&
                         (!(children.classList.contains("column1"))) &&
                         (!(children.classList.contains("flagged")))) {
                         if (childrenBoxNumber.slice(8).length === 18) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 19) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 20) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("flagged")) &&
                         (children.classList.contains("box-bomb"))) &&
                         (!(children.classList.contains("column1"))) &&
                         (!(children.classList.contains("column2")))) {
                         if (childrenBoxNumber.slice(8).length === 18) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 19) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 20) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column1")) &&
                         (children.classList.contains("flagged")) &&
                         (children.classList.contains("box-bomb"))) &&
                         (!(children.classList.contains("column2")))) {
                         if (childrenBoxNumber.slice(8).length === 26) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 27) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 28) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     } else if (((children.classList.contains("column2")) &&
                         (children.classList.contains("flagged")) &&
                         (children.classList.contains("box-bomb"))) &&
                         (!(children.classList.contains("column1")))) {
                         if (childrenBoxNumber.slice(8).length === 26) {
-                            z = Number(childrenBoxNumber.slice(8, 9))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 9))
                         } else if (childrenBoxNumber.slice(8).length === 27) {
-                            z = Number(childrenBoxNumber.slice(8, 10))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 10))
                         } else if (childrenBoxNumber.slice(8).length === 28) {
-                            z = Number(childrenBoxNumber.slice(8, 11))
+                            boxNumber = Number(childrenBoxNumber.slice(8, 11))
                         }
                     }
-                } else z = Number(childrenBoxNumber.slice(8))
+                } else boxNumber = Number(childrenBoxNumber.slice(8))
 
-                if (((z === (x - y - 1)) &&
+                if (((boxNumber === (targetBoxNumber - y - 1)) &&
                     (!(target.classList.contains("column1")))) ||
-                    (z === (x - y)) ||
-                    ((z === (x - y + 1)) &&
+                    (boxNumber === (targetBoxNumber - y)) ||
+                    ((boxNumber === (targetBoxNumber - y + 1)) &&
                         (!(target.classList.contains("column2"))) &&
-                        (z !== 1)) ||
-                    ((z === (x - 1)) &&
+                        (boxNumber !== 1)) ||
+                    ((boxNumber === (targetBoxNumber - 1)) &&
                         (!(target.classList.contains("column1")))) ||
-                    ((z === (x + 1)) &&
+                    ((boxNumber === (targetBoxNumber + 1)) &&
                         (!(target.classList.contains("column2")))) ||
-                    ((z === (x + y - 1)) &&
+                    ((boxNumber === (targetBoxNumber + y - 1)) &&
                         (!(target.classList.contains("column1")))) ||
-                    (z === (x + y)) ||
-                    ((z === (x + y + 1)) &&
+                    (boxNumber === (targetBoxNumber + y)) ||
+                    ((boxNumber === (targetBoxNumber + y + 1)) &&
                         (!(target.classList.contains("column2"))))
                 ) {
-                    if (gameContainer.children[i].classList.contains("box-bomb")) {
+                    if (boxes[i].classList.contains("box-bomb")) {
                         contador++
                     }
-                } else continue
+                }
             }
 
             if (contador === 0) {
                 target.style.boxShadow = "none"
             } else {
                 target.style.boxShadow = "none"
-                const span = d.createElement("SPAN")
+                const span = document.createElement("SPAN")
                 span.textContent = contador.toString()
                 target.appendChild(span)
             }
@@ -272,20 +284,22 @@ const hasUserWinned = () => {
         flaggeds = gameContainer.querySelectorAll(".flagged")
 
     if (bombs.length === flaggeds.length) {
-        createWinAlert()
-        const winAlert = d.getElementById("win-alert")
-        winAlert.style.animation = "warning-appear 3s forwards 0.5s"
+        toggleBannerRenderization(winningBanner)
+        winningBanner.style.animation = "warning-appear 3s forwards 0.5s"
     }
 }
 
-const reload = () => {
-    d.body.style.animation = "reload 2s forwards"
-    setTimeout(() => {
-        location.reload()
-    }, 2000)
+const enableGameReload = () => {
+    d.addEventListener("click", e => {
+        if (e.target.matches(".reload-btn")) {
+            d.body.style.animation = "reload 2s forwards"
+            setTimeout(() => {
+                location.reload()
+            }, 2000)
+        }
+    })
 }
 
 export {
-    reload,
     handleBoxClick
 }
